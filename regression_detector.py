@@ -1,7 +1,8 @@
 import csv
 import requests
+import os
 
-DISCORD_WEBHOOK="https://discord.com/api/webhooks/1385247600902410260/79kv7beAT-rJFliRvGy5vIUtupzT8kqg-dHldvoRFFND4dYiT0m1qxh6xJorgFsU7Bf2"
+DISCORD_WEBHOOK=os.getenv("DISCORD_WEBHOOK")
 
 def load_metrics(file):
     metrics = {}
@@ -14,6 +15,9 @@ def load_metrics(file):
     return metrics
 
 def send_discord_alert(message, success=True):
+    if not DISCORD_WEBHOOK:
+        print("No Discord webhook configured. Skipping alert.")
+        return
     color = 3066993 if success else 15158332  # Green or Red
     payload = {
         "embeds": [
@@ -24,7 +28,12 @@ def send_discord_alert(message, success=True):
             }
         ]
     }
-    requests.post(DISCORD_WEBHOOK, json=payload)
+    try:
+        response = requests.post(DISCORD_WEBHOOK, json=payload)
+        if response.status_code != 204:
+            print(f"Failed to send Discord alert: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"Exception sending Discord alert: {e}")
 
 def detect_regression(baseline_file, latest_file, threshold_percent=10):
     baseline = load_metrics(baseline_file)
@@ -36,11 +45,11 @@ def detect_regression(baseline_file, latest_file, threshold_percent=10):
     increase = ((p95_latest - p95_base) / p95_base) * 100
 
     if increase > threshold_percent:
-        msg = f"🚨 Regression Detected! p95 latency increased by {increase:.2f}%"
+        msg = f"Regression Detected! p95 latency increased by {increase:.2f}%"
         print(msg)
         send_discord_alert(msg, success=False)
     else:
-        msg = f"✅ No regression. p95 latency change: {increase:.2f}%"
+        msg = f"No regression. p95 latency change: {increase:.2f}%"
         print(msg)
         send_discord_alert(msg, success=True)
 

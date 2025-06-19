@@ -1,0 +1,45 @@
+name: PerfGuard CI
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  perfguard-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Spring Boot app
+        run: ./mvnw clean package -DskipTests
+
+      - name: Start Spring Boot in background
+        run: java -jar target/*.jar &
+
+      - name: Wait for Spring Boot to start
+        run: sleep 10
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install locust requests
+
+      - name: Run Locust performance test
+        run: locust --headless --users 10 --spawn-rate 2 --host=http://localhost:8080 --run-time 10s
+
+      - name: Run regression detector
+        run: python regression_detector.py
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
