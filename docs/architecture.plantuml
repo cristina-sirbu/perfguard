@@ -1,0 +1,32 @@
+@startuml
+skinparam linetype ortho
+skinparam monochrome true
+
+actor "Engineer" as Dev
+
+rectangle "CI/CD" {
+  Dev --> "GitHub Actions\n(workflow trigger)"
+  "GitHub Actions\n(workflow trigger)" --> "Spring Boot App\n(backend)"
+}
+
+rectangle "Performance Test Suite" {
+  "Locust\n(Load Generator)" --> "Spring Boot App\n(backend)"
+  "Locust\n(Load Generator)" --> "Regression Detector\n(Python)"
+  "Regression Detector\n(Python)" --> "latest_results.csv"
+  "Regression Detector\n(Python)" --> "Discord Webhook"
+  note right of "Discord Webhook" : Alert on regression or success
+}
+
+rectangle "Monitoring Stack" {
+  "Prometheus Exporter\n(Python HTTP server)" --> "latest_results.csv"
+  "Prometheus" --> "Prometheus Exporter\n(Python HTTP server)"
+  "Grafana" --> "Prometheus"
+  Dev --> "Grafana"
+}
+
+note right of "Prometheus Exporter\n(Python HTTP server)"
+  Only shows local metrics.
+  CI runs do not push to this exporter.
+end note
+
+@enduml
