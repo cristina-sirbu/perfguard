@@ -1,4 +1,4 @@
-package com.perfguard.perfguard;
+package com.perfguard.perf;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.perfguard.perfguard;
+package com.perfguard.perf;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

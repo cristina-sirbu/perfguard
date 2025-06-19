@@ -1,4 +1,4 @@
-package com.perfguard.perfguard;
+package com.perfguard.perf;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
