@@ -20,7 +20,7 @@ jobs:
           java-version: '21'
 
       - name: Build Spring Boot app
-        run: ./mvnw clean package -DskipTests
+        run: mvn clean package -DskipTests
 
       - name: Start Spring Boot in background
         run: java -jar target/*.jar &
